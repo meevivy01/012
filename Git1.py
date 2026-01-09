@@ -153,6 +153,14 @@ class JobThaiRowScraper:
         opts.add_argument("--no-sandbox")
         opts.add_argument("--disable-dev-shm-usage")
         opts.add_argument("--disable-popup-blocking")
+        
+        # 🟢 [เพิ่ม 1] ตั้งค่าภาษาให้เป็นคนไทย (สำคัญมากเมื่อรันเมืองนอก)
+        opts.add_argument("--lang=th-TH")
+        
+        # 🟢 [เพิ่ม 2] ปิดฟีเจอร์ที่บอทชอบใช้
+        opts.add_argument("--disable-blink-features=AutomationControlled")
+        opts.add_argument("--disable-notifications")
+        
         fake_user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         opts.add_argument(f'--user-agent={fake_user_agent}')
         
@@ -174,7 +182,28 @@ class JobThaiRowScraper:
             try: self.driver.execute_cdp_cmd('Network.setUserAgentOverride', {"userAgent": self.ua.random})
             except: pass
 
-    def random_sleep(self, min_t=2.0, max_t=5.0): time.sleep(random.uniform(min_t, max_t))
+    def random_sleep(self, min_t=4.0, max_t=7.0): time.sleep(random.uniform(min_t, max_t))
+
+    # 🟢 [เพิ่มฟังก์ชันใหม่] เลื่อนหน้าจอแบบสุ่ม เหมือนคนกำลังกวาดสายตา
+    # 🟢 ก๊อปปี้ฟังก์ชันนี้ไปวางใน Class JobThaiRowScraper
+    def human_scroll(self):
+        try:
+            # หาความสูงทั้งหมดของหน้าเว็บ
+            total_height = self.driver.execute_script("return document.body.scrollHeight")
+            
+            # ค่อยๆ เลื่อนลงมาทีละนิด แบบสุ่มระยะ (เหมือนคนเอานิ้วไถมือถือ หรือหมุน Mouse wheel)
+            current_position = 0
+            while current_position < total_height:
+                scroll_step = random.randint(300, 700) # สุ่มระยะที่จะเลื่อน
+                current_position += scroll_step
+                self.driver.execute_script(f"window.scrollTo(0, {current_position});")
+                time.sleep(random.uniform(0.1, 0.4)) # หยุดนิดนึงระหว่างเลื่อน
+            
+            # พอเลื่อนสุดแล้ว เลื่อนกลับขึ้นไปข้างบนสุด (เพื่อให้ JobThai โหลด Header ครบ)
+            time.sleep(0.5)
+            self.driver.execute_script("window.scrollTo(0, 0);")
+        except Exception as e:
+            pass # ถ้าเลื่อนไม่ได้ก็ช่างมัน ไปต่อเลย
 
     def parse_thai_date_exact(self, date_str):
         if not date_str: return None
@@ -238,7 +267,7 @@ class JobThaiRowScraper:
                     return True
             except Exception as e: console.print(f"❌ Cookie Error: {e}", style="error")
 
-        login_url = "https://www.jobthai.com/th/employer/login"
+        login_url = "https://www.jobthai.com/th/employer"
         console.print("1️⃣   เข้าสู่หน้า Login (Direct)...", style="info")
         try:
             self.driver.get(login_url)
@@ -353,11 +382,22 @@ class JobThaiRowScraper:
             except: self.random_sleep(5, 10)
 
         if not load_success: return None, 999, None
-        self.random_sleep(2.0, 4.0) 
+        
+        # 🟢 [จุดที่ต้องเติม] เริ่มตรงนี้ครับ 🟢
+        # แกล้งทำเป็นเลื่อนอ่านข้อมูล (Human Behavior)
+        try:
+            self.human_scroll() 
+        except: 
+            pass # กันเหนียวไว้ ถ้าเลื่อนไม่ได้ก็อย่าให้โปรแกรมพัง
+            
+        self.random_sleep(2.0, 5.0) # รอเหมือนคนอ่านสักพัก
+        # 🟢 [สิ้นสุดจุดที่เติม] 🟢
         
         data = {'Link': url}
         try: full_text = self.driver.find_element(By.CSS_SELECTOR, "#mainTableTwoColumn").text
         except: full_text = ""
+        
+        # ... (โค้ดส่วนที่เหลือของคุณเหมือนเดิมเป๊ะ) ...
         
         def get_val(sel, xpath=False):
             try:
