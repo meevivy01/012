@@ -98,7 +98,7 @@ if os.path.exists(CLIENTS_PATH):
 TARGET_UNIVERSITIES = ["ราชภัฏธนบุรี", "Dhonburi Rajabhat University"]  
 TARGET_FACULTIES = ["เครื่องสำอาง","Cosmetic Science"] 
 TARGET_MAJORS = ["เครื่องสำอาง", "วิทยาศาสตร์เครื่องสำอาง","Cosmetic Science", "Cosmetics", "Cosmetic"]
-SEARCH_KEYWORDS = ["ราชภัฏธนบุรี เครื่องสำอาง"]
+SEARCH_KEYWORDS = ["ราชภัฏธนบุรี เครื่องสำอาง", "Cosmetic Dhonburi Rajabhat"]
 
 KEYWORDS_CONFIG = {
     "NPD": {"titles": ["NPD", "R&D", "RD", "Research", "Development", "วิจัย", "พัฒนา", "Formulation", "สูตร"]},
